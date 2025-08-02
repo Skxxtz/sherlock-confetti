@@ -4,6 +4,14 @@ Sherlock Confetti is a lightweight program that displays a confetti animation
 as a top-level overlay on Wayland compositors. It provides a fun and colorful
 visual effect without interfering with your workflow.
 
+<div align="center" style="text-align:center; border-radius:10px;">
+  <video width="100%" style="border-radius:10px; margin-top: 1em;" autoplay muted playsinline>
+    <source src="assets/showcase.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+
 ## Features
 
 - **Wayland-native:** Built specifically for Wayland environments.
