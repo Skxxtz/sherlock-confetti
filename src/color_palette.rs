@@ -27,8 +27,7 @@ impl ColorPalette {
             Self::Candy => Self::candy(),
         }
     }
-    fn party() -> ColorVec {
-        vec![
+
             [1.0, 0.0, 0.0],   // bright red
             [1.0, 0.5, 0.0],   // vivid orange
             [1.0, 1.0, 0.0],   // bright yellow

@@ -29,3 +29,10 @@ window managers.
 confetti
 ```
 
+## Palettes
+
+<div align="center" style="text-align:center; border-radius:10px;">
+  <picture>
+    <img alt="color palettes" width="100%" style="border-radius: 10px;" src="assets/palettes.png">
+  </picture>
+</div>
