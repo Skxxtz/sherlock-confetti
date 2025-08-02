@@ -13,10 +13,10 @@ use wayland_client::{
     globals::registry_queue_init, Connection, Proxy, QueueHandle
 };
 
-use crate::color_pallette::ColorPalette;
+use crate::color_palette::ColorPalette;
 
 mod implementations;
-mod color_pallette;
+mod color_palette;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
