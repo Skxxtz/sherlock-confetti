@@ -3,20 +3,23 @@ use raw_window_handle::{
     RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
 };
 use smithay_client_toolkit::{
-    compositor::CompositorState, output::OutputState, registry::RegistryState, seat::SeatState, shell::{
-        wlr_layer::{Anchor, LayerShell, LayerSurface}, WaylandSurface
-    }
+    compositor::CompositorState,
+    output::OutputState,
+    registry::RegistryState,
+    seat::SeatState,
+    shell::{
+        WaylandSurface,
+        wlr_layer::{Anchor, LayerShell, LayerSurface},
+    },
 };
-use wgpu::{util::DeviceExt, BindGroup, Buffer};
 use std::{borrow::Cow, env::args, ptr::NonNull, str::FromStr, time::Instant};
-use wayland_client::{
-    globals::registry_queue_init, Connection, Proxy, QueueHandle
-};
+use wayland_client::{Connection, Proxy, QueueHandle, globals::registry_queue_init};
+use wgpu::{BindGroup, Buffer, util::DeviceExt};
 
 use crate::color_palette::ColorPalette;
 
-mod implementations;
 mod color_palette;
+mod implementations;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -88,13 +91,18 @@ fn main() {
 
     let surface = compositor_state.create_surface(&qh);
     // Create the window for adapter selection
-    let layer = layer_state.create_layer_surface(&qh, surface, smithay_client_toolkit::shell::wlr_layer::Layer::Top, Some(""), None);
+    let layer = layer_state.create_layer_surface(
+        &qh,
+        surface,
+        smithay_client_toolkit::shell::wlr_layer::Layer::Top,
+        Some(""),
+        None,
+    );
     layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
     let (width, height) = (400, 400);
     layer.set_size(0, 0); // 0 width = stretch to full width
     layer.set_opaque_region(None);
     layer.commit();
-
 
     // Initialize wgpu
     let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
@@ -129,13 +137,13 @@ fn main() {
     let (device, queue) = pollster::block_on(adapter.request_device(&Default::default()))
         .expect("Failed to request device");
 
-
     let mut surface_config = surface.get_default_config(&adapter, 200, 200).unwrap();
     surface_config.alpha_mode = wgpu::CompositeAlphaMode::PreMultiplied;
     surface_config.format = wgpu::TextureFormat::Bgra8Unorm;
 
     let (layout, group, uniform_buffer, uniforms) = create_uniforms(&device);
-    let (vertex_buffer, instance_buffer, vertex_count, instance_count) = create_vertex_buffer(&device, width as f32, height as f32);
+    let (vertex_buffer, instance_buffer, vertex_count, instance_count) =
+        create_vertex_buffer(&device, width as f32, height as f32);
 
     let render_pipeline = create_pipeline(&device, surface_config.format, &layout);
 
@@ -201,7 +209,6 @@ struct Wgpu {
     instance_buffer: Buffer,
     vertex_count: u32,
     instance_count: u32,
-
 }
 
 impl Wgpu {
@@ -245,15 +252,11 @@ impl Wgpu {
         }
         self.queue.submit(Some(encoder.finish()));
         surface_texture.present();
-
     }
     pub fn update_time(&mut self, time: f32) {
         self.uniforms.time = time;
-        self.queue.write_buffer(
-            &self.uniform_buffer,
-            0,
-            bytemuck::bytes_of(&self.uniforms),
-        );
+        self.queue
+            .write_buffer(&self.uniform_buffer, 0, bytemuck::bytes_of(&self.uniforms));
     }
 }
 
@@ -345,19 +348,20 @@ fn create_uniforms(device: &wgpu::Device) -> (wgpu::BindGroupLayout, BindGroup, 
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
     });
 
-    let uniform_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        entries: &[wgpu::BindGroupLayoutEntry {
-            binding: 0,
-            visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Uniform,
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
-        }],
-        label: Some("uniform_bind_group_layout"),
-    });
+    let uniform_bind_group_layout =
+        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+            label: Some("uniform_bind_group_layout"),
+        });
 
     let uniform_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &uniform_bind_group_layout,
@@ -368,10 +372,19 @@ fn create_uniforms(device: &wgpu::Device) -> (wgpu::BindGroupLayout, BindGroup, 
         label: Some("uniform_bind_group"),
     });
 
-    (uniform_bind_group_layout, uniform_bind_group, uniform_buffer, uniforms)
+    (
+        uniform_bind_group_layout,
+        uniform_bind_group,
+        uniform_buffer,
+        uniforms,
+    )
 }
 
-fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buffer, Buffer, u32, u32) {
+fn create_vertex_buffer(
+    device: &wgpu::Device,
+    width: f32,
+    height: f32,
+) -> (Buffer, Buffer, u32, u32) {
     // Only 1 rectangle vertices here, since instances define position:
     let rectangle = Vertex::rectangle(0.0, 0.0, 0.00002 * height, 0.00002 * width);
     let args = args().collect::<Vec<String>>();
@@ -380,16 +393,20 @@ fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buff
     let color_count = colors.len();
 
     let mut rng = rand::rng();
-    let instances = (0..200).map(|_| {
-        let x = rng.random_range(-1.0..1.0) as f32;
-        let y_max = (1.0 - x*x).sqrt() * 2.5;
-        let y = rng.random_range(-0.5..y_max);
-        InstanceData {
-            direction: [ x * 1.2, y ],
-            color: colors.get(rng.random_range(0..color_count)).unwrap().clone(),
-        }
-    }).collect::<Vec<InstanceData>>();
-
+    let instances = (0..200)
+        .map(|_| {
+            let x = rng.random_range(-1.0..1.0) as f32;
+            let y_max = (1.0 - x * x).sqrt() * 2.5;
+            let y = rng.random_range(-0.5..y_max);
+            InstanceData {
+                direction: [x * 1.2, y],
+                color: colors
+                    .get(rng.random_range(0..color_count))
+                    .unwrap()
+                    .clone(),
+            }
+        })
+        .collect::<Vec<InstanceData>>();
 
     let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         label: Some("Rectangle Vertex Buffer"),
@@ -403,14 +420,19 @@ fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buff
         usage: wgpu::BufferUsages::VERTEX,
     });
 
-    (vertex_buffer, instance_buffer, rectangle.len() as u32, instances.len() as u32)
+    (
+        vertex_buffer,
+        instance_buffer,
+        rectangle.len() as u32,
+        instances.len() as u32,
+    )
 }
 
-fn extreact_flag_value<T: FromStr>(args: &Vec<String>, name: &str) -> Option<T>{
+fn extreact_flag_value<T: FromStr>(args: &Vec<String>, name: &str) -> Option<T> {
     let pos = args.iter().position(|arg| arg == name)?;
     let val = args.get(pos + 1)?;
     if val.starts_with("-") {
-        return None
+        return None;
     }
     val.parse::<T>().ok()
 }

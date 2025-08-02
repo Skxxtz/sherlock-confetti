@@ -1,10 +1,20 @@
 use std::{num::NonZeroU32, time::Duration};
 
-use smithay_client_toolkit::{compositor::CompositorHandler, delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat, output::{OutputHandler, OutputState}, registry::{ProvidesRegistryState, RegistryState}, registry_handlers, seat::{Capability, SeatHandler, SeatState}, shell::wlr_layer::{LayerShellHandler, LayerSurface, LayerSurfaceConfigure}};
-use wayland_client::{protocol::{wl_output, wl_seat, wl_surface}, Connection, QueueHandle};
+use smithay_client_toolkit::{
+    compositor::CompositorHandler,
+    delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_seat,
+    output::{OutputHandler, OutputState},
+    registry::{ProvidesRegistryState, RegistryState},
+    registry_handlers,
+    seat::{Capability, SeatHandler, SeatState},
+    shell::wlr_layer::{LayerShellHandler, LayerSurface, LayerSurfaceConfigure},
+};
+use wayland_client::{
+    Connection, QueueHandle,
+    protocol::{wl_output, wl_seat, wl_surface},
+};
 
 use crate::Wgpu;
-
 
 delegate_compositor!(Wgpu);
 delegate_output!(Wgpu);
@@ -52,7 +62,6 @@ impl LayerShellHandler for Wgpu {
             self.draw(qh);
             std::thread::sleep(Duration::from_millis(16));
         }
-
     }
 }
 
@@ -137,7 +146,6 @@ impl OutputHandler for Wgpu {
     }
 }
 
-
 impl SeatHandler for Wgpu {
     fn seat_state(&mut self) -> &mut SeatState {
         &mut self.seat_state
@@ -145,13 +153,12 @@ impl SeatHandler for Wgpu {
 
     fn new_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {}
     fn new_capability(
-            &mut self,
-            _conn: &Connection,
-            _qh: &QueueHandle<Self>,
-            _seat: wl_seat::WlSeat,
-            _capability: Capability,
-        ) {
-        
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _seat: wl_seat::WlSeat,
+        _capability: Capability,
+    ) {
     }
 
     fn remove_capability(
@@ -165,8 +172,6 @@ impl SeatHandler for Wgpu {
 
     fn remove_seat(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_seat::WlSeat) {}
 }
-
-
 
 impl ProvidesRegistryState for Wgpu {
     fn registry(&mut self) -> &mut RegistryState {

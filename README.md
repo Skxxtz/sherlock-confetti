@@ -31,7 +31,11 @@ window managers.
 confetti
 ```
 
+
 ## Palettes
+
+Palettes can be selected by running `confetti` with the `--palette <name>`
+flag. The names for available palettes are listed in the graphic below:
 
 <div align="center" style="text-align:center; border-radius:10px;">
   <picture>
