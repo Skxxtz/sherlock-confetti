@@ -411,12 +411,12 @@ fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buff
     ];
     let color_count = colors.len();
 
-    let instances = (0..60).map(|_| {
+    let instances = (0..200).map(|_| {
+        let x = rng.random_range(-1.0..1.0) as f32;
+        let y_max = (1.0 - x*x).sqrt() * 2.5;
+        let y = rng.random_range(-0.5..y_max);
         InstanceData {
-            direction: [
-                rng.random_range(-1.0..1.0), 
-                rng.random_range(0.5..2.0)
-            ],
+            direction: [ x * 1.2, y ],
             color: colors.get(rng.random_range(0..color_count)).unwrap().clone(),
         }
     }).collect::<Vec<InstanceData>>();
