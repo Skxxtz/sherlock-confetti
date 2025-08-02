@@ -8,12 +8,15 @@ use smithay_client_toolkit::{
     }
 };
 use wgpu::{util::DeviceExt, BindGroup, Buffer};
-use std::{borrow::Cow, ptr::NonNull, time::Instant};
+use std::{borrow::Cow, env::args, ptr::NonNull, str::FromStr, time::Instant};
 use wayland_client::{
     globals::registry_queue_init, Connection, Proxy, QueueHandle
 };
 
+use crate::color_pallette::ColorPalette;
+
 mod implementations;
+mod color_pallette;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -205,8 +208,8 @@ impl Wgpu {
     fn draw(&mut self, _qh: &QueueHandle<Self>) {
         let elapsed = self.start_time.elapsed().as_secs_f32();
         self.update_time(elapsed);
-        if elapsed > 2.5  {
-            std::process::exit(0);
+        if elapsed > 3.0 {
+            self.exit = true
         }
         let surface_texture = self
             .surface
@@ -371,46 +374,12 @@ fn create_uniforms(device: &wgpu::Device) -> (wgpu::BindGroupLayout, BindGroup, 
 fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buffer, Buffer, u32, u32) {
     // Only 1 rectangle vertices here, since instances define position:
     let rectangle = Vertex::rectangle(0.0, 0.0, 0.00002 * height, 0.00002 * width);
-    let mut rng = rand::rng();
-    let colors: Vec<[f32; 3]> = vec![
-        [1.0, 0.0, 0.0],   // red
-        [1.0, 0.5, 0.0],   // orange
-        [1.0, 1.0, 0.0],   // yellow
-        [0.0, 1.0, 0.0],   // green
-        [0.0, 1.0, 1.0],   // cyan
-        [0.0, 0.0, 1.0],   // blue
-        [0.5, 0.0, 1.0],   // purple
-        [1.0, 0.0, 1.0],   // magenta
-        [1.0, 0.7, 0.7],   // pink
-        [0.7, 1.0, 0.7],   // light green
-        [0.7, 0.7, 1.0],   // light blue
-        [1.0, 0.9, 0.6],   // cream
-        [0.8, 0.4, 0.0],   // burnt orange
-        [0.4, 0.8, 0.1],   // lime green
-        [0.1, 0.4, 0.8],   // steel blue
-        [0.8, 0.1, 0.8],   // violet
-        [1.0, 0.6, 0.9],   // bright pink
-        [0.6, 0.6, 0.6],   // gray
-        [0.9, 0.8, 0.1],   // gold
-        [0.3, 1.0, 0.7],   // mint green
-        [0.2, 0.6, 0.2],   // forest green
-        [0.9, 0.3, 0.2],   // brick red
-        [0.9, 0.9, 0.9],   // light gray
-        [0.3, 0.2, 0.6],   // indigo
-        [0.1, 0.8, 0.8],   // turquoise
-        [0.9, 0.5, 0.7],   // rose pink
-        [0.8, 0.7, 0.3],   // mustard
-        [0.5, 0.9, 0.4],   // pea green
-        [0.4, 0.7, 0.9],   // sky blue
-        [0.7, 0.3, 0.6],   // mauve
-        [0.9, 0.9, 0.4],   // lemon yellow
-        [0.2, 0.4, 0.3],   // dark teal
-        [0.8, 0.2, 0.2],   // cherry red
-        [0.6, 0.6, 0.8],   // lavender
-        [0.3, 0.8, 0.5],   // seafoam
-    ];
+    let args = args().collect::<Vec<String>>();
+    let pallette = extreact_flag_value::<ColorPalette>(&args, "--pallette").unwrap_or_default();
+    let colors = pallette.get_colors();
     let color_count = colors.len();
 
+    let mut rng = rand::rng();
     let instances = (0..200).map(|_| {
         let x = rng.random_range(-1.0..1.0) as f32;
         let y_max = (1.0 - x*x).sqrt() * 2.5;
@@ -435,4 +404,13 @@ fn create_vertex_buffer(device: &wgpu::Device, width: f32, height: f32) -> (Buff
     });
 
     (vertex_buffer, instance_buffer, rectangle.len() as u32, instances.len() as u32)
+}
+
+fn extreact_flag_value<T: FromStr>(args: &Vec<String>, name: &str) -> Option<T>{
+    let pos = args.iter().position(|arg| arg == name)?;
+    let val = args.get(pos + 1)?;
+    if val.starts_with("-") {
+        return None
+    }
+    val.parse::<T>().ok()
 }

@@ -46,6 +46,9 @@ impl LayerShellHandler for Wgpu {
             self.surface.configure(&self.device, &config);
         }
         loop {
+            if self.exit {
+                break;
+            }
             self.draw(qh);
             std::thread::sleep(Duration::from_millis(16));
         }
