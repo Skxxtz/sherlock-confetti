@@ -34,7 +34,7 @@ confetti
 ## Installation
 
 ### Build Dependencies
-- 'libxkbcommon'
+- `libxkbcommon`
 
 ### Runtime Dependencies
 - `vulkan-icd-loader`
