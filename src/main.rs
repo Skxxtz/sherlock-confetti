@@ -315,7 +315,7 @@ fn create_pipeline(
             compilation_options: Default::default(),
             targets: &[Some(wgpu::ColorTargetState {
                 format: swap_chain_format,
-                blend: Some(wgpu::BlendState::ALPHA_BLENDING), // ✅ Required
+                blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                 write_mask: wgpu::ColorWrites::ALL,
             })],
         }),
