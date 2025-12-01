@@ -146,6 +146,35 @@ Make sure you have the following dependencies installed:
 
     (Make sure to replace the filename if the version number is different.)
 
+### Using Nix
+
+If you have Nix with flakes enabled, you can use the provided `flake.nix`
+without installing Rust or other build tools yourself.
+
+- Run directly from the flake (no install):
+
+    ```bash
+    nix run github:Skxxtz/sherlock-confetti
+    ```
+
+- Install into your profile:
+
+    ```bash
+    nix profile install github:Skxxtz/sherlock-confetti#confetti
+    ```
+
+- Build locally from a checkout and use the dev shell:
+
+    ```bash
+    # build the flake output
+    nix build .#confetti
+    ./result/bin/confetti
+
+    # enter a shell with Rust/tooling set up
+    nix develop
+    ```
+
+
 ## Palettes
 
 Palettes can be selected by running `confetti` with the `--palette <name>`
